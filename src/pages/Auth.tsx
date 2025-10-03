@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import BackButton from "@/components/BackButton";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -94,6 +95,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-background">
+      <BackButton className="fixed top-4 left-4 z-50 glass-card" variant="ghost" />
       <div className="w-full max-w-md">
         <div className="glass-card p-8 space-y-6">
           <div className="flex flex-col items-center space-y-2">
