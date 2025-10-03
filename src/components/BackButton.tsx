@@ -10,10 +10,18 @@ interface BackButtonProps {
 const BackButton = ({ className = "", variant = "ghost" }: BackButtonProps) => {
   const navigate = useNavigate();
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <Button
       variant={variant}
-      onClick={() => navigate(-1)}
+      onClick={handleBack}
       className={`gap-2 ${className}`}
     >
       <ArrowLeft className="h-4 w-4" />
