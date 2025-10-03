@@ -40,9 +40,9 @@ const Hero = () => {
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link to="/donations">
+            <Link to="/auth">
               <Button size="lg" variant="outline" className="glass border-white/20 hover:bg-white/10">
-                Support a Cause
+                Sign In
               </Button>
             </Link>
           </div>
