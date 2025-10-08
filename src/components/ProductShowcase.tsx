@@ -1,6 +1,7 @@
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const products = [
   {
@@ -57,20 +58,24 @@ const ProductShowcase = () => {
               className="glass-card overflow-hidden group hover:scale-105 transition-all duration-300 animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="relative overflow-hidden aspect-square">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute top-2 right-2 glass-card px-2 py-1 text-xs font-semibold">
-                  ${product.donationAmount} donated
+              <Link to={`/products/${product.id}`}>
+                <div className="relative overflow-hidden aspect-square cursor-pointer">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute top-2 right-2 glass-card px-2 py-1 text-xs font-semibold">
+                    ${product.donationAmount} donated
+                  </div>
                 </div>
-              </div>
+              </Link>
               
               <CardContent className="p-4">
                 <div className="text-xs text-accent font-semibold mb-2">{product.category}</div>
-                <h3 className="font-semibold text-lg mb-2 line-clamp-1">{product.name}</h3>
+                <Link to={`/products/${product.id}`}>
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-1 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
+                </Link>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-primary">${product.price}</span>
                 </div>
@@ -90,9 +95,11 @@ const ProductShowcase = () => {
         </div>
 
         <div className="text-center mt-12">
-          <Button size="lg" variant="outline" className="glass border-white/20 hover:bg-white/10">
-            View All Products
-          </Button>
+          <Link to="/products">
+            <Button size="lg" variant="outline" className="glass border-white/20 hover:bg-white/10">
+              View All Products
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
