@@ -2,6 +2,7 @@ import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -63,6 +64,8 @@ const products = [
 ];
 
 const Products = () => {
+  const { addToCart } = useCart();
+
   return (
     <div className="min-h-screen bg-gradient-background">
       <Navbar />
@@ -112,7 +115,16 @@ const Products = () => {
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0 gap-2">
-                  <Button className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity">
+                  <Button 
+                    className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+                    onClick={() => addToCart({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                      donationAmount: product.donationAmount
+                    })}
+                  >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Add to Cart
                   </Button>

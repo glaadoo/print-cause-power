@@ -1,8 +1,11 @@
 import { ShoppingCart, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 
 const Navbar = () => {
+  const { totalItems } = useCart();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/10">
       <div className="container mx-auto px-4 py-4">
@@ -30,12 +33,16 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-highlight text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
-              </span>
-            </Button>
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-highlight text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>

@@ -3,6 +3,7 @@ import { ShoppingCart, Heart, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/contexts/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useState } from "react";
@@ -115,6 +116,7 @@ const allProducts = [
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState("");
   const [isWishlisted, setIsWishlisted] = useState(false);
   
@@ -215,6 +217,14 @@ const ProductDetail = () => {
                 <Button 
                   className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
                   disabled={!selectedSize}
+                  onClick={() => addToCart({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    size: selectedSize,
+                    donationAmount: product.donationAmount
+                  })}
                 >
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   Add to Cart
