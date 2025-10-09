@@ -14,16 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      addresses: {
+        Row: {
+          city: string
+          country: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          label: string
+          line1: string
+          line2: string | null
+          postal_code: string
+          state: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          country?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label: string
+          line1: string
+          line2?: string | null
+          postal_code: string
+          state: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          line1?: string
+          line2?: string | null
+          postal_code?: string
+          state?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          auth_provider: Database["public"]["Enums"]["auth_provider"] | null
+          avatar_url: string | null
+          created_at: string | null
+          currency: string | null
+          email: string
+          email_verified: boolean | null
+          first_name: string | null
+          id: string
+          last_login_at: string | null
+          last_name: string | null
+          last_order_at: string | null
+          locale: string | null
+          marketing_opt_in: boolean | null
+          metadata: Json | null
+          mfa_enabled: boolean | null
+          order_count: number | null
+          phone: string | null
+          status: Database["public"]["Enums"]["user_status"] | null
+          theme: Database["public"]["Enums"]["theme_preference"] | null
+          updated_at: string | null
+          user_id: string
+          username: string | null
+          wishlist_count: number | null
+        }
+        Insert: {
+          auth_provider?: Database["public"]["Enums"]["auth_provider"] | null
+          avatar_url?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email: string
+          email_verified?: boolean | null
+          first_name?: string | null
+          id?: string
+          last_login_at?: string | null
+          last_name?: string | null
+          last_order_at?: string | null
+          locale?: string | null
+          marketing_opt_in?: boolean | null
+          metadata?: Json | null
+          mfa_enabled?: boolean | null
+          order_count?: number | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          theme?: Database["public"]["Enums"]["theme_preference"] | null
+          updated_at?: string | null
+          user_id: string
+          username?: string | null
+          wishlist_count?: number | null
+        }
+        Update: {
+          auth_provider?: Database["public"]["Enums"]["auth_provider"] | null
+          avatar_url?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string
+          email_verified?: boolean | null
+          first_name?: string | null
+          id?: string
+          last_login_at?: string | null
+          last_name?: string | null
+          last_order_at?: string | null
+          locale?: string | null
+          marketing_opt_in?: boolean | null
+          metadata?: Json | null
+          mfa_enabled?: boolean | null
+          order_count?: number | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          theme?: Database["public"]["Enums"]["theme_preference"] | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string | null
+          wishlist_count?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          permissions: string[] | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permissions?: string[] | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permissions?: string[] | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "customer" | "admin" | "manager"
+      auth_provider: "password" | "google" | "apple" | "facebook" | "github"
+      theme_preference: "light" | "dark" | "system"
+      user_status: "active" | "suspended" | "deleted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +305,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["customer", "admin", "manager"],
+      auth_provider: ["password", "google", "apple", "facebook", "github"],
+      theme_preference: ["light", "dark", "system"],
+      user_status: ["active", "suspended", "deleted"],
+    },
   },
 } as const

@@ -53,28 +53,42 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
+        const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: redirectUrl,
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes("already registered")) {
+            throw new Error("This email is already registered. Please sign in instead.");
+          }
+          throw error;
+        }
 
         toast({
           title: "Success!",
           description: "Account created successfully. You can now sign in.",
         });
+        
+        // Auto switch to sign in after successful signup
         setIsSignUp(false);
+        setPassword("");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            throw new Error("Invalid email or password. Please try again.");
+          }
+          throw error;
+        }
 
         toast({
           title: "Welcome back!",

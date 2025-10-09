@@ -46,9 +46,11 @@ const Navbar = () => {
                 )}
               </Button>
             </Link>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
