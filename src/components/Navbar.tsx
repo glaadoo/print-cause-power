@@ -1,4 +1,4 @@
-import { ShoppingCart, User, Heart } from "lucide-react";
+import { ShoppingCart, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
@@ -11,7 +11,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Heart className="h-6 w-6 text-highlight animate-glow" />
+            <Home className="h-6 w-6 text-highlight animate-glow" />
             <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Print Power Purpose
             </span>
