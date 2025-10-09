@@ -18,19 +18,19 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/products" className="text-foreground/80 hover:text-foreground transition-colors">
+            <Link to="/products" className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors">
               Products
             </Link>
-            <Link to="/donations" className="text-foreground/80 hover:text-foreground transition-colors">
+            <Link to="/donations" className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors">
               Donations
             </Link>
-            <Link to="/about" className="text-foreground/80 hover:text-foreground transition-colors">
+            <Link to="/about" className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors">
               About
             </Link>
-            <Link to="/kenzie" className="text-foreground/80 hover:text-foreground transition-colors">
+            <Link to="/kenzie" className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors">
               Kenzie
             </Link>
-            <Link to="/onboarding" className="text-foreground/80 hover:text-foreground transition-colors">
+            <Link to="/onboarding" className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors">
               Onboarding
             </Link>
           </div>
