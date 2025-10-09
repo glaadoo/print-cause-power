@@ -46,11 +46,11 @@ const Navbar = () => {
                 )}
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/auth">
                 <User className="h-5 w-5" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
