@@ -8,56 +8,102 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Frost design system */
-    --background: 200 30% 96%;
-    --foreground: 210 40% 15%;
+    /* Modern Blue-Purple Design System (Palette A) */
+    /* Base colors */
+    --background: 228 100% 98%;        /* #F5F7FF - soft background */
+    --foreground: 222 47% 11%;         /* #111827 - text color */
 
-    --card: 200 20% 98%;
-    --card-foreground: 210 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 200 20% 98%;
-    --popover-foreground: 210 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Icy blue primary */
-    --primary: 200 80% 50%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Indigo #635BFF */
+    --primary: 244 100% 67%;
+    --primary-foreground: 0 0% 100%;    /* #FFFFFF - text on primary */
+    --primary-600: 244 79% 58%;         /* #4F46E5 - hover state */
     
-    /* Cool cyan secondary */
-    --secondary: 190 70% 55%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary: Muted gray */
+    --secondary: 220 13% 91%;
+    --secondary-foreground: 222 47% 11%;
 
-    /* Mint accent */
-    --accent: 170 60% 60%;
-    --accent-foreground: 210 40% 15%;
+    /* Accent: Cyan #22D3EE */
+    --accent: 187 85% 53%;
+    --accent-foreground: 222 47% 11%;
 
-    /* Ice blue highlight */
-    --highlight: 200 90% 65%;
+    /* Highlight: Same as accent for consistency */
+    --highlight: 187 85% 53%;
     
-    --muted: 200 20% 90%;
-    --muted-foreground: 210 20% 40%;
+    /* Muted: Gray #6B7280 */
+    --muted: 220 9% 46%;
+    --muted-foreground: 220 9% 46%;
 
-    --destructive: 0 85% 60%;
+    /* Success: Green #10B981 */
+    --success: 158 75% 39%;
+    --success-foreground: 0 0% 100%;
+
+    /* Destructive/Danger: Red #EF4444 */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 85%;
-    --input: 200 20% 94%;
-    --ring: 200 80% 50%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 244 100% 67%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Glass effect colors */
-    --glass-bg: 200 40% 98%;
-    --glass-border: 200 30% 90%;
-    
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(200 80% 50%) 0%, hsl(190 70% 55%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(190 70% 55%) 0%, hsl(170 60% 60%) 100%);
-    --gradient-background: linear-gradient(135deg, hsl(200 40% 98%) 0%, hsl(190 30% 94%) 50%, hsl(180 25% 96%) 100%);
+    --gradient-primary: linear-gradient(90deg, hsl(244 100% 67%) 0%, hsl(187 85% 53%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(244 100% 67%) 0%, hsl(244 79% 58%) 100%);
+    --gradient-background: linear-gradient(135deg, hsl(228 100% 98%) 0%, hsl(0 0% 100%) 100%);
     
     /* Shadows & Glows */
-    --glow-primary: 0 0 40px hsla(200, 80%, 50%, 0.3);
-    --glow-secondary: 0 0 40px hsla(190, 70%, 55%, 0.3);
-    --shadow-glass: 0 8px 32px 0 rgba(100, 150, 200, 0.15);
+    --glow-primary: 0 0 40px hsla(244, 100%, 67%, 0.3);
+    --glow-accent: 0 0 40px hsla(187, 85%, 53%, 0.3);
+    --shadow-glass: 0 8px 32px 0 rgba(99, 91, 255, 0.1);
+    --shadow-subtle: 0 2px 8px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    /* Dark mode - inverted neutrals, same brand colors */
+    --background: 222 47% 11%;
+    --foreground: 228 100% 98%;
+
+    --card: 220 13% 15%;
+    --card-foreground: 228 100% 98%;
+
+    --popover: 220 13% 15%;
+    --popover-foreground: 228 100% 98%;
+
+    /* Keep primary and accent the same for brand consistency */
+    --primary: 244 100% 67%;
+    --primary-foreground: 0 0% 100%;
+    --primary-600: 244 79% 58%;
+    
+    --secondary: 220 13% 20%;
+    --secondary-foreground: 228 100% 98%;
+
+    --accent: 187 85% 53%;
+    --accent-foreground: 222 47% 11%;
+
+    --highlight: 187 85% 53%;
+    
+    --muted: 220 9% 46%;
+    --muted-foreground: 220 13% 70%;
+
+    --success: 158 75% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 244 100% 67%;
+
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --shadow-subtle: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
   }
 }
 
