@@ -2,6 +2,7 @@ import { ShoppingCart, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const { totalItems } = useCart();
@@ -51,6 +52,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10">
                 <ShoppingCart className="h-5 w-5" />
