@@ -177,6 +177,56 @@ export type Database = {
           },
         ]
       }
+      pressmaster_requests: {
+        Row: {
+          created_at: string
+          donation_id: string | null
+          error_message: string | null
+          id: string
+          mode: Database["public"]["Enums"]["pressmaster_mode"]
+          request_body: Json
+          response_body: Json | null
+          status: Database["public"]["Enums"]["pressmaster_status"]
+          type: Database["public"]["Enums"]["pressmaster_request_type"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          id?: string
+          mode: Database["public"]["Enums"]["pressmaster_mode"]
+          request_body: Json
+          response_body?: Json | null
+          status?: Database["public"]["Enums"]["pressmaster_status"]
+          type?: Database["public"]["Enums"]["pressmaster_request_type"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["pressmaster_mode"]
+          request_body?: Json
+          response_body?: Json | null
+          status?: Database["public"]["Enums"]["pressmaster_status"]
+          type?: Database["public"]["Enums"]["pressmaster_request_type"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pressmaster_requests_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           auth_provider: Database["public"]["Enums"]["auth_provider"] | null
@@ -302,6 +352,9 @@ export type Database = {
         | "delivered"
         | "cancelled"
       payment_method: "credit_card" | "debit_card" | "paypal" | "bank_transfer"
+      pressmaster_mode: "stub" | "live"
+      pressmaster_request_type: "quote" | "story"
+      pressmaster_status: "pending" | "success" | "error"
       theme_preference: "light" | "dark" | "system"
       user_status: "active" | "suspended" | "deleted"
     }
@@ -441,6 +494,9 @@ export const Constants = {
         "cancelled",
       ],
       payment_method: ["credit_card", "debit_card", "paypal", "bank_transfer"],
+      pressmaster_mode: ["stub", "live"],
+      pressmaster_request_type: ["quote", "story"],
+      pressmaster_status: ["pending", "success", "error"],
       theme_preference: ["light", "dark", "system"],
       user_status: ["active", "suspended", "deleted"],
     },

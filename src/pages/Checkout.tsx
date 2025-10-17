@@ -11,6 +11,8 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, ShoppingBag } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { z } from "zod";
+import { requestPressmasterQuote } from "@/services/pressmaster.service";
+import { PressmasterQuoteModal } from "@/components/PressmasterQuoteModal";
 
 const shippingSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -26,6 +28,8 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, totalDonation, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPressmasterModal, setShowPressmasterModal] = useState(false);
+  const [pressmasterQuote, setPressmasterQuote] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<"credit_card" | "debit_card" | "paypal" | "bank_transfer">("credit_card");
   
   const [shippingInfo, setShippingInfo] = useState({
@@ -138,6 +142,45 @@ const Checkout = () => {
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
+
+      // Check for $777+ donation trigger
+      const isCheckDrop = totalDonation >= 777;
+
+      if (isCheckDrop) {
+        try {
+          // Trigger Pressmaster quote for check-drop
+          const quote = await requestPressmasterQuote({
+            project: 'Print Power Purpose',
+            specs: 'Check-drop campaign assets',
+            quantity: 1,
+            donationId: order.id
+          });
+
+          setPressmasterQuote(quote);
+          
+          toast({
+            title: "🎉 $777 Check Drop triggered!",
+            description: `Pressmaster (${quote.mock ? 'Stub' : 'Live'}) quote ready.`,
+            action: (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPressmasterModal(true)}
+              >
+                View Quote
+              </Button>
+            ),
+          });
+        } catch (error) {
+          // Don't block the order flow
+          console.warn('Pressmaster quote failed (non-blocking):', error);
+          toast({
+            title: "Note",
+            description: "Order placed, but Pressmaster quote failed. We'll follow up.",
+            variant: "default",
+          });
+        }
+      }
 
       // Clear cart and show success
       clearCart();
@@ -369,6 +412,13 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      <PressmasterQuoteModal
+        open={showPressmasterModal}
+        onOpenChange={setShowPressmasterModal}
+        readOnly={true}
+        existingQuote={pressmasterQuote}
+      />
     </div>
   );
 };
