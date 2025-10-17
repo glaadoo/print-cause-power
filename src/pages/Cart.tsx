@@ -145,9 +145,11 @@ const Cart = () => {
                     </div>
 
                     <div className="space-y-2 pt-2">
-                      <Button className="w-full bg-gradient-primary text-lg h-12">
-                        Proceed to Checkout
-                      </Button>
+                      <Link to="/checkout">
+                        <Button className="w-full bg-gradient-primary text-lg h-12">
+                          Proceed to Checkout
+                        </Button>
+                      </Link>
                       <Link to="/products">
                         <Button variant="outline" className="w-full">
                           Continue Shopping

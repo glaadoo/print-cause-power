@@ -59,6 +59,124 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          donation_amount: number
+          id: string
+          order_id: string
+          price: number
+          product_id: number
+          product_image: string | null
+          product_name: string
+          quantity: number
+          size: string | null
+        }
+        Insert: {
+          created_at?: string
+          donation_amount?: number
+          id?: string
+          order_id: string
+          price: number
+          product_id: number
+          product_image?: string | null
+          product_name: string
+          quantity: number
+          size?: string | null
+        }
+        Update: {
+          created_at?: string
+          donation_amount?: number
+          id?: string
+          order_id?: string
+          price?: number
+          product_id?: number
+          product_image?: string | null
+          product_name?: string
+          quantity?: number
+          size?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          order_number: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          shipping_address_id: string | null
+          shipping_city: string
+          shipping_country: string
+          shipping_line1: string
+          shipping_line2: string | null
+          shipping_name: string
+          shipping_postal_code: string
+          shipping_state: string
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          total_donation: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_number: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          shipping_address_id?: string | null
+          shipping_city: string
+          shipping_country?: string
+          shipping_line1: string
+          shipping_line2?: string | null
+          shipping_name: string
+          shipping_postal_code: string
+          shipping_state: string
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          total_donation?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_number?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          shipping_address_id?: string | null
+          shipping_city?: string
+          shipping_country?: string
+          shipping_line1?: string
+          shipping_line2?: string | null
+          shipping_name?: string
+          shipping_postal_code?: string
+          shipping_state?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          total_donation?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_address_id_fkey"
+            columns: ["shipping_address_id"]
+            isOneToOne: false
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           auth_provider: Database["public"]["Enums"]["auth_provider"] | null
@@ -177,6 +295,13 @@ export type Database = {
     Enums: {
       app_role: "customer" | "admin" | "manager"
       auth_provider: "password" | "google" | "apple" | "facebook" | "github"
+      order_status:
+        | "pending"
+        | "processing"
+        | "shipped"
+        | "delivered"
+        | "cancelled"
+      payment_method: "credit_card" | "debit_card" | "paypal" | "bank_transfer"
       theme_preference: "light" | "dark" | "system"
       user_status: "active" | "suspended" | "deleted"
     }
@@ -308,6 +433,14 @@ export const Constants = {
     Enums: {
       app_role: ["customer", "admin", "manager"],
       auth_provider: ["password", "google", "apple", "facebook", "github"],
+      order_status: [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
+      payment_method: ["credit_card", "debit_card", "paypal", "bank_transfer"],
       theme_preference: ["light", "dark", "system"],
       user_status: ["active", "suspended", "deleted"],
     },
