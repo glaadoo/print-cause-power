@@ -1,10 +1,76 @@
 import { Heart, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const DonationBarometer = () => {
-  const currentAmount = 125000;
+  const [currentAmount, setCurrentAmount] = useState(0);
+  const [todayAmount, setTodayAmount] = useState(0);
+  const [weekAmount, setWeekAmount] = useState(0);
+  const [recentAmount, setRecentAmount] = useState(0);
   const goalAmount = 200000;
   const progress = (currentAmount / goalAmount) * 100;
+
+  useEffect(() => {
+    // Fetch initial data
+    const fetchDonations = async () => {
+      const { data: allDonations } = await supabase
+        .from('donations')
+        .select('amount, created_at');
+
+      if (allDonations) {
+        const total = allDonations.reduce((sum, d) => sum + Number(d.amount), 0);
+        setCurrentAmount(total);
+
+        const now = new Date();
+        const todayStart = new Date(now.setHours(0, 0, 0, 0));
+        const weekStart = new Date(now.setDate(now.getDate() - 7));
+        const recentStart = new Date(Date.now() - 60000); // Last minute
+
+        const today = allDonations
+          .filter(d => new Date(d.created_at) >= todayStart)
+          .reduce((sum, d) => sum + Number(d.amount), 0);
+        
+        const week = allDonations
+          .filter(d => new Date(d.created_at) >= weekStart)
+          .reduce((sum, d) => sum + Number(d.amount), 0);
+        
+        const recent = allDonations
+          .filter(d => new Date(d.created_at) >= recentStart)
+          .reduce((sum, d) => sum + Number(d.amount), 0);
+
+        setTodayAmount(today);
+        setWeekAmount(week);
+        setRecentAmount(recent);
+      }
+    };
+
+    fetchDonations();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('donations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'donations'
+        },
+        (payload) => {
+          const newAmount = Number(payload.new.amount);
+          setCurrentAmount(prev => prev + newAmount);
+          setTodayAmount(prev => prev + newAmount);
+          setWeekAmount(prev => prev + newAmount);
+          setRecentAmount(prev => prev + newAmount);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <section className="py-20">
@@ -44,17 +110,30 @@ const DonationBarometer = () => {
 
             <div className="pt-4 border-t border-white/10">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                {[
-                  { label: "This Month", value: "$12.5K" },
-                  { label: "This Week", value: "$3.2K" },
-                  { label: "Today", value: "$480" },
-                  { label: "Recent", value: "$125" },
-                ].map((item, index) => (
-                  <div key={index}>
-                    <div className="text-2xl font-bold text-primary mb-1">{item.value}</div>
-                    <div className="text-xs text-foreground/60">{item.label}</div>
+                <div>
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    ${(currentAmount / 1000).toFixed(1)}K
                   </div>
-                ))}
+                  <div className="text-xs text-foreground/60">Total</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    ${weekAmount.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-foreground/60">This Week</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    ${todayAmount.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-foreground/60">Today</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    ${recentAmount.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-foreground/60">Recent</div>
+                </div>
               </div>
             </div>
 

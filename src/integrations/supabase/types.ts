@@ -59,6 +59,36 @@ export type Database = {
         }
         Relationships: []
       }
+      donations: {
+        Row: {
+          amount: number
+          cause: string
+          created_at: string
+          donor_name: string
+          id: string
+          payment_method: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          cause: string
+          created_at?: string
+          donor_name: string
+          id?: string
+          payment_method: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cause?: string
+          created_at?: string
+          donor_name?: string
+          id?: string
+          payment_method?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
