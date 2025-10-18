@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,14 +8,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Heart } from "lucide-react";
 
-const DonationForm = () => {
+interface DonationFormProps {
+  selectedCause?: string;
+  causeDetails?: {
+    title: string;
+    description: string;
+  };
+}
+
+const DonationForm = ({ selectedCause, causeDetails }: DonationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     donor_name: "",
     amount: "",
-    cause: "",
+    cause: selectedCause || "",
     payment_method: ""
   });
+
+  useEffect(() => {
+    if (selectedCause) {
+      setFormData(prev => ({ ...prev, cause: selectedCause }));
+    }
+  }, [selectedCause]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +76,15 @@ const DonationForm = () => {
           <CardTitle>Make a Donation</CardTitle>
         </div>
         <CardDescription>
-          Support a cause you care about
+          {causeDetails ? (
+            <>
+              <span className="font-semibold text-foreground">{causeDetails.title}</span>
+              <br />
+              {causeDetails.description}
+            </>
+          ) : (
+            "Support a cause you care about"
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>

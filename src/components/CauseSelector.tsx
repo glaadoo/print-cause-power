@@ -1,5 +1,6 @@
 import { GraduationCap, Heart, Leaf, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const causes = [
   {
@@ -33,6 +34,20 @@ const causes = [
 ];
 
 const CauseSelector = () => {
+  const navigate = useNavigate();
+
+  const handleCauseClick = (cause: typeof causes[0]) => {
+    navigate('/donations', { 
+      state: { 
+        selectedCause: cause.title.toLowerCase(),
+        causeDetails: {
+          title: cause.title,
+          description: cause.description
+        }
+      } 
+    });
+  };
+
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
@@ -53,6 +68,7 @@ const CauseSelector = () => {
                 key={index}
                 className="glass-card cursor-pointer hover:scale-105 transition-all duration-300 group animate-slide-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => handleCauseClick(cause)}
               >
                 <CardContent className="p-6 text-center">
                   <div className={`inline-flex p-4 rounded-2xl glass mb-4 ${cause.color} group-hover:animate-glow`}>

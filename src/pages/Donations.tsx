@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,6 +17,9 @@ interface Donation {
 }
 
 const Donations = () => {
+  const location = useLocation();
+  const selectedCause = location.state?.selectedCause;
+  const causeDetails = location.state?.causeDetails;
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
 
   useEffect(() => {
@@ -60,10 +64,10 @@ const Donations = () => {
           Donation <span className="bg-gradient-secondary bg-clip-text text-transparent">Dashboard</span>
         </h1>
 
-        <DonationBarometer />
+        <DonationBarometer selectedCause={selectedCause} />
 
         <div className="grid md:grid-cols-2 gap-8 mt-12 max-w-6xl mx-auto">
-          <DonationForm />
+          <DonationForm selectedCause={selectedCause} causeDetails={causeDetails} />
 
           <Card>
             <CardHeader>
