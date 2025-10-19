@@ -5,8 +5,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DonationBarometer from "@/components/DonationBarometer";
 import DonationForm from "@/components/DonationForm";
+import { PressmasterQuoteModal } from "@/components/PressmasterQuoteModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { Sparkles } from "lucide-react";
 
 interface Donation {
   id: string;
@@ -21,6 +24,7 @@ const Donations = () => {
   const selectedCause = location.state?.selectedCause;
   const causeDetails = location.state?.causeDetails;
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+  const [showPressmasterModal, setShowPressmasterModal] = useState(false);
 
   useEffect(() => {
     const fetchRecentDonations = async () => {
@@ -60,9 +64,19 @@ const Donations = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-center mb-12">
-          Donation <span className="bg-gradient-secondary bg-clip-text text-transparent">Dashboard</span>
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl font-bold">
+            Donation <span className="bg-gradient-secondary bg-clip-text text-transparent">Dashboard</span>
+          </h1>
+          <Button
+            onClick={() => setShowPressmasterModal(true)}
+            variant="outline"
+            className="gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            Get Pressmaster Quote
+          </Button>
+        </div>
 
         <DonationBarometer selectedCause={selectedCause} />
 
@@ -101,6 +115,11 @@ const Donations = () => {
           </Card>
         </div>
       </main>
+
+      <PressmasterQuoteModal
+        open={showPressmasterModal}
+        onOpenChange={setShowPressmasterModal}
+      />
 
       <Footer />
     </div>

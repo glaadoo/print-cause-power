@@ -1,32 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Mock quote data structure
-const getMockQuote = (requestData: any) => {
+// Mock data generator
+function getMockQuote(requestData: any) {
   return {
-    quote_id: `MOCK-${Date.now()}`,
-    status: "pending",
-    items: requestData.items || [],
-    pricing: {
-      subtotal: 299.99,
-      shipping: 15.00,
-      tax: 31.50,
-      total: 346.49,
+    mock: true,
+    quote: {
+      amount: Math.floor(Math.random() * 5000) + 1000,
       currency: "USD"
     },
-    estimated_delivery: {
-      min_days: 3,
-      max_days: 5
-    },
-    created_at: new Date().toISOString(),
-    valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    turnaround: "5-7 business days",
+    notes: "This is a mock quote. Configure PRESSMASTER_API_KEY for live quotes.",
+    story: "🎉 Your donation powers positive change! Every contribution creates ripples of impact in our community.",
+    image_url: null
   };
-};
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -34,173 +27,125 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    {
-      global: {
-        headers: { Authorization: req.headers.get('Authorization')! },
-      },
-    }
-  );
-
   try {
-    const requestData = await req.json();
-    const apiKey = Deno.env.get('PRESSMASTER_API_KEY');
-    const mode = apiKey ? 'live' : 'stub';
-
-    // Get user ID from auth
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id;
-
-    // If no API key is present, return mock data
-    if (!apiKey) {
-      console.log('No PRESSMASTER_API_KEY found, returning mock quote data');
-      const mockQuote = getMockQuote(requestData);
-      
-      // Log request to database
-      if (userId) {
-        await supabase.from('pressmaster_requests').insert({
-          user_id: userId,
-          type: 'quote',
-          request_body: requestData,
-          response_body: mockQuote,
-          mode: 'stub',
-          status: 'success',
-          donation_id: requestData.donationId || null
-        });
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
       }
-      
+    );
+
+    // Get authenticated user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      console.error('Auth error:', userError);
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          data: mockQuote,
-          mock: true,
-          message: "Using mock data. Add PRESSMASTER_API_KEY to use real API."
-        }), 
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Call real Pressmaster API
-    console.log('PRESSMASTER_API_KEY found, calling real API');
-    try {
-      const response = await fetch('https://api.pressmaster.com/v1/quotes', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
+    // Parse request data
+    const requestData = await req.json();
+    const { project, specs, quantity, donationId } = requestData;
+
+    console.log('Pressmaster quote request:', { project, specs, quantity, donationId, userId: user.id });
+
+    // Check for API key
+    const PRESSMASTER_API_KEY = Deno.env.get('PRESSMASTER_API_KEY');
+    const mode = PRESSMASTER_API_KEY ? 'live' : 'stub';
+
+    let responseData;
+    let status = 'success';
+    let errorMessage = null;
+
+    if (mode === 'stub') {
+      // Return mock data
+      console.log('Pressmaster: Running in STUB mode (no API key)');
+      responseData = getMockQuote(requestData);
+    } else {
+      // Call real Pressmaster API
+      console.log('Pressmaster: Running in LIVE mode');
+      try {
+        const pressmasterResponse = await fetch('https://api.pressmaster.com/v1/quotes', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${PRESSMASTER_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            project,
+            specs,
+            quantity,
+          }),
+        });
+
+        if (!pressmasterResponse.ok) {
+          const errorText = await pressmasterResponse.text();
+          console.error('Pressmaster API error:', pressmasterResponse.status, errorText);
+          throw new Error(`Pressmaster API error: ${pressmasterResponse.status}`);
+        }
+
+        const apiData = await pressmasterResponse.json();
+        responseData = {
+          mock: false,
+          ...apiData
+        };
+        console.log('Pressmaster API response:', responseData);
+      } catch (error) {
+        console.error('Pressmaster API call failed:', error);
+        status = 'failed';
+        errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        responseData = {
+          ...getMockQuote(requestData),
+          error: errorMessage
+        };
+      }
+    }
+
+    // Log request to database
+    const { error: logError } = await supabaseClient
+      .from('pressmaster_requests')
+      .insert({
+        user_id: user.id,
+        donation_id: donationId || null,
+        type: 'quote',
+        mode,
+        status,
+        request_body: requestData,
+        response_body: responseData,
+        error_message: errorMessage,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Pressmaster API error:', response.status, errorText);
-        
-        // Log failed request
-        if (userId) {
-          await supabase.from('pressmaster_requests').insert({
-            user_id: userId,
-            type: 'quote',
-            request_body: requestData,
-            mode: 'live',
-            status: 'error',
-            error_message: `API error: ${response.status} - ${errorText}`,
-            donation_id: requestData.donationId || null
-          });
-        }
-        
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'Pressmaster API request failed',
-            details: errorText
-          }), 
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: response.status,
-          }
-        );
-      }
-
-      const data = await response.json();
-      
-      // Log successful request
-      if (userId) {
-        await supabase.from('pressmaster_requests').insert({
-          user_id: userId,
-          type: 'quote',
-          request_body: requestData,
-          response_body: data,
-          mode: 'live',
-          status: 'success',
-          donation_id: requestData.donationId || null
-        });
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          data,
-          mock: false
-        }), 
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-    } catch (apiError) {
-      console.error('Error calling Pressmaster API:', apiError);
-      
-      // Log error
-      if (userId) {
-        await supabase.from('pressmaster_requests').insert({
-          user_id: userId,
-          type: 'quote',
-          request_body: requestData,
-          mode: 'live',
-          status: 'error',
-          error_message: apiError instanceof Error ? apiError.message : 'Unknown API error',
-          donation_id: requestData.donationId || null
-        });
-      }
-      
-      throw apiError;
+    if (logError) {
+      console.error('Failed to log Pressmaster request:', logError);
     }
 
-  } catch (error) {
-    console.error('Error in pressmaster-quote function:', error);
-    
-    // Log error to database - best effort
-    try {
-      const apiKey = Deno.env.get('PRESSMASTER_API_KEY');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.id) {
-        await supabase.from('pressmaster_requests').insert({
-          user_id: user.id,
-          type: 'quote',
-          request_body: {},
-          mode: apiKey ? 'live' : 'stub',
-          status: 'error',
-          error_message: error instanceof Error ? error.message : 'Unknown error occurred'
-        });
-      }
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
-    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      }), 
+      JSON.stringify({ success: true, data: responseData }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error('Error in pressmaster-quote function:', error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      {
         status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
