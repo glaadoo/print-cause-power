@@ -1,42 +1,84 @@
+import { useEffect, useState } from "react";
 import { GraduationCap, Heart, Leaf, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const causes = [
+const causeConfig = [
   {
     icon: GraduationCap,
     title: "Education",
     description: "Support educational programs and scholarships",
-    raised: "$45,200",
     color: "text-primary",
   },
   {
     icon: Heart,
     title: "Healthcare",
     description: "Provide medical care to those in need",
-    raised: "$38,500",
     color: "text-highlight",
   },
   {
     icon: Leaf,
     title: "Environment",
     description: "Protect our planet for future generations",
-    raised: "$28,300",
     color: "text-accent",
   },
   {
     icon: Users,
     title: "Community",
     description: "Build stronger, more connected communities",
-    raised: "$13,000",
     color: "text-secondary",
   },
 ];
 
 const CauseSelector = () => {
   const navigate = useNavigate();
+  const [causeTotals, setCauseTotals] = useState<Record<string, number>>({});
 
-  const handleCauseClick = (cause: typeof causes[0]) => {
+  useEffect(() => {
+    const fetchCauseTotals = async () => {
+      const { data } = await supabase
+        .from('donations')
+        .select('cause, amount');
+
+      if (data) {
+        const totals: Record<string, number> = {};
+        data.forEach(d => {
+          const cause = d.cause;
+          totals[cause] = (totals[cause] || 0) + Number(d.amount);
+        });
+        setCauseTotals(totals);
+      }
+    };
+
+    fetchCauseTotals();
+
+    const channel = supabase
+      .channel('cause-selector-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'donations'
+        },
+        (payload) => {
+          const newCause = payload.new.cause;
+          const newAmount = Number(payload.new.amount);
+          setCauseTotals(prev => ({
+            ...prev,
+            [newCause]: (prev[newCause] || 0) + newAmount
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleCauseClick = (cause: typeof causeConfig[0]) => {
     navigate('/donations', { 
       state: { 
         selectedCause: cause.title.toLowerCase(),
@@ -61,8 +103,11 @@ const CauseSelector = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {causes.map((cause, index) => {
+          {causeConfig.map((cause, index) => {
             const Icon = cause.icon;
+            const causeName = cause.title.toLowerCase();
+            const total = causeTotals[causeName] || 0;
+            
             return (
               <Card 
                 key={index}
@@ -78,7 +123,9 @@ const CauseSelector = () => {
                   <p className="text-foreground/70 text-sm mb-4">{cause.description}</p>
                   <div className="glass p-3 rounded-lg">
                     <div className="text-xs text-foreground/60 mb-1">Total Raised</div>
-                    <div className={`text-lg font-bold ${cause.color}`}>{cause.raised}</div>
+                    <div className={`text-lg font-bold ${cause.color} transition-all duration-300`}>
+                      ${total.toLocaleString()}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
