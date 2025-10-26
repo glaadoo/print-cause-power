@@ -78,6 +78,7 @@ export function AccountMenu({ user, notificationCount = 0, activeOrderCount = 0 
     { icon: Bell, label: "Notifications", href: "/account/notifications", badge: notificationCount > 0 ? notificationCount : undefined },
     { icon: Heart, label: "Notify Me List", href: "/account/notify-me" },
     { icon: Gift, label: "Gift Cards", href: "/account/gift-cards" },
+    { icon: Heart, label: "My Donations", href: "/account/donations" },
   ];
 
   return (

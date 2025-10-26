@@ -13,6 +13,7 @@ interface DashboardStats {
   lastOrderDate: string | null;
   savedItemsCount: number;
   giftCardBalance: number;
+  totalDonations: number;
 }
 
 export default function Account() {
@@ -47,11 +48,20 @@ export default function Account() {
         return sum + (parseFloat(r.gift_cards?.balance) || 0);
       }, 0) || 0;
 
+      // Fetch total donations
+      const { data: donations } = await supabase
+        .from("donations")
+        .select("amount")
+        .eq("user_id", user.id);
+
+      const totalDonations = donations?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+
       setStats({
         orderCount: orders?.length || 0,
         lastOrderDate: orders?.[0]?.created_at || null,
         savedItemsCount: notifyMeCount || 0,
         giftCardBalance: totalGiftCardBalance,
+        totalDonations,
       });
       setLoading(false);
     };
@@ -126,6 +136,19 @@ export default function Account() {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
+                <Heart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats?.totalDonations.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Making a difference
+                </p>
+              </CardContent>
+            </Card>
+
             <Card className="md:col-span-2 lg:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
@@ -178,6 +201,12 @@ export default function Account() {
                     <Button variant="outline" className="w-full justify-start">
                       <Gift className="mr-2 h-4 w-4" />
                       Manage Gift Cards
+                    </Button>
+                  </Link>
+                  <Link to="/account/donations" className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Heart className="mr-2 h-4 w-4" />
+                      View My Donations
                     </Button>
                   </Link>
                 </div>
