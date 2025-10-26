@@ -3,9 +3,75 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountMenu } from "@/components/AccountMenu";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const { totalItems } = useCart();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [activeOrderCount, setActiveOrderCount] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Fetch notification count
+    const fetchNotificationCount = async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .is("read_at", null);
+      
+      setNotificationCount(count || 0);
+    };
+
+    // Fetch active orders count
+    const fetchActiveOrders = async () => {
+      const { count } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .in("status", ["processing", "shipped"]);
+      
+      setActiveOrderCount(count || 0);
+    };
+
+    fetchNotificationCount();
+    fetchActiveOrders();
+  }, [user]);
+
+  const handleAccountClick = () => {
+    if (!user) {
+      setShowAuthModal(true);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-primary shadow-lg border-b-2 border-accent/20">
@@ -63,14 +129,52 @@ const Navbar = () => {
                 )}
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/10" asChild>
-              <Link to="/auth">
+            {user ? (
+              <AccountMenu 
+                user={user} 
+                notificationCount={notificationCount}
+                activeOrderCount={activeOrderCount}
+              />
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-primary-foreground hover:bg-white/10"
+                onClick={handleAccountClick}
+              >
                 <User className="h-5 w-5" />
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign In Required</DialogTitle>
+            <DialogDescription>
+              Please sign in or create an account to access your account features.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-4">
+            <Button 
+              onClick={() => {
+                setShowAuthModal(false);
+                navigate("/auth");
+              }}
+            >
+              Sign In / Create Account
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAuthModal(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 };

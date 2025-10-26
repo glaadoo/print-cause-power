@@ -14,6 +14,12 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Kenzie from "./pages/Kenzie";
 import Donations from "./pages/Donations";
+import Account from "./pages/Account";
+import AccountOrders from "./pages/AccountOrders";
+import AccountInfo from "./pages/AccountInfo";
+import AccountNotifications from "./pages/AccountNotifications";
+import AccountNotifyMe from "./pages/AccountNotifyMe";
+import AccountGiftCards from "./pages/AccountGiftCards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +42,12 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/kenzie" element={<Kenzie />} />
               <Route path="/donations" element={<Donations />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/account/orders" element={<AccountOrders />} />
+              <Route path="/account/info" element={<AccountInfo />} />
+              <Route path="/account/notifications" element={<AccountNotifications />} />
+              <Route path="/account/notify-me" element={<AccountNotifyMe />} />
+              <Route path="/account/gift-cards" element={<AccountGiftCards />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

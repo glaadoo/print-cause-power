@@ -89,6 +89,129 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_card_redemptions: {
+        Row: {
+          amount: number
+          created_at: string
+          gift_card_id: string
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          gift_card_id: string
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          gift_card_id?: string
+          id?: string
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_card_redemptions_gift_card_id_fkey"
+            columns: ["gift_card_id"]
+            isOneToOne: false
+            referencedRelation: "gift_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_card_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gift_cards: {
+        Row: {
+          balance: number
+          code: string
+          created_at: string
+          currency: string
+          id: string
+          status: string
+        }
+        Insert: {
+          balance?: number
+          code: string
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          balance?: number
+          code?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notify_me: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: number
+          user_id: string
+          variant: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: number
+          user_id: string
+          variant?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: number
+          user_id?: string
+          variant?: Json | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
