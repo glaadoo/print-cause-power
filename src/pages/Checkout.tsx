@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag, CreditCard, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { z } from "zod";
 import { requestPressmasterQuote } from "@/services/pressmaster.service";
@@ -22,6 +22,23 @@ const shippingSchema = z.object({
   state: z.string().trim().min(1, "State is required").max(50),
   postalCode: z.string().trim().min(1, "Postal code is required").max(20),
   country: z.string().trim().min(1, "Country is required").max(50),
+});
+
+// Payment validation schemas
+const cardPaymentSchema = z.object({
+  cardNumber: z.string().trim().regex(/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/, "Invalid card number format"),
+  cardholderName: z.string().trim().min(1, "Cardholder name is required").max(100),
+  expiryDate: z.string().trim().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Invalid expiry date (MM/YY)"),
+  cvv: z.string().trim().regex(/^\d{3,4}$/, "Invalid CVV"),
+});
+
+const paypalPaymentSchema = z.object({
+  paypalEmail: z.string().trim().email("Invalid PayPal email"),
+});
+
+const bankTransferSchema = z.object({
+  bankAccount: z.string().trim().min(8, "Invalid account number").max(17),
+  routingNumber: z.string().trim().regex(/^\d{9}$/, "Routing number must be 9 digits"),
 });
 
 const Checkout = () => {
@@ -42,11 +59,57 @@ const Checkout = () => {
     country: "US",
   });
 
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: "",
+    cardholderName: "",
+    expiryDate: "",
+    cvv: "",
+    paypalEmail: "",
+    bankAccount: "",
+    routingNumber: "",
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setShippingInfo(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const formatCardNumber = (value: string) => {
+    const cleaned = value.replace(/\s/g, '');
+    const chunks = cleaned.match(/.{1,4}/g) || [];
+    return chunks.join(' ').substring(0, 19);
+  };
+
+  const formatExpiryDate = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length >= 2) {
+      return cleaned.substring(0, 2) + '/' + cleaned.substring(2, 4);
+    }
+    return cleaned;
+  };
+
+  const handlePaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === 'cardNumber') {
+      formattedValue = formatCardNumber(value);
+    } else if (name === 'expiryDate') {
+      formattedValue = formatExpiryDate(value);
+    } else if (name === 'cvv') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 4);
+    } else if (name === 'bankAccount') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 17);
+    } else if (name === 'routingNumber') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 9);
+    }
+
+    setPaymentInfo(prev => ({ ...prev, [name]: formattedValue }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -65,10 +128,10 @@ const Checkout = () => {
     }
 
     // Validate shipping info
-    const validation = shippingSchema.safeParse(shippingInfo);
-    if (!validation.success) {
+    const shippingValidation = shippingSchema.safeParse(shippingInfo);
+    if (!shippingValidation.success) {
       const newErrors: Record<string, string> = {};
-      validation.error.errors.forEach(err => {
+      shippingValidation.error.errors.forEach(err => {
         if (err.path[0]) {
           newErrors[err.path[0].toString()] = err.message;
         }
@@ -77,6 +140,33 @@ const Checkout = () => {
       toast({
         title: "Validation error",
         description: "Please fill in all required fields correctly",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate payment info based on payment method
+    let paymentValidation;
+    const newErrors: Record<string, string> = {};
+
+    if (paymentMethod === "credit_card" || paymentMethod === "debit_card") {
+      paymentValidation = cardPaymentSchema.safeParse(paymentInfo);
+    } else if (paymentMethod === "paypal") {
+      paymentValidation = paypalPaymentSchema.safeParse(paymentInfo);
+    } else if (paymentMethod === "bank_transfer") {
+      paymentValidation = bankTransferSchema.safeParse(paymentInfo);
+    }
+
+    if (paymentValidation && !paymentValidation.success) {
+      paymentValidation.error.errors.forEach(err => {
+        if (err.path[0]) {
+          newErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      toast({
+        title: "Payment validation error",
+        description: "Please fill in all payment fields correctly",
         variant: "destructive",
       });
       return;
@@ -360,6 +450,143 @@ const Checkout = () => {
                       <Label htmlFor="bank_transfer">Bank Transfer</Label>
                     </div>
                   </RadioGroup>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Payment Information
+                  </CardTitle>
+                  <CardDescription>
+                    {/* DEMO ONLY - In production, use Stripe or similar PCI-compliant payment processor */}
+                    Enter your payment details securely
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {(paymentMethod === "credit_card" || paymentMethod === "debit_card") && (
+                    <>
+                      <div>
+                        <Label htmlFor="cardNumber">Card Number *</Label>
+                        <div className="relative">
+                          <Input
+                            id="cardNumber"
+                            name="cardNumber"
+                            value={paymentInfo.cardNumber}
+                            onChange={handlePaymentInputChange}
+                            placeholder="1234 5678 9012 3456"
+                            maxLength={19}
+                            required
+                            className="pl-10"
+                          />
+                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        </div>
+                        {errors.cardNumber && <p className="text-sm text-destructive mt-1">{errors.cardNumber}</p>}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="cardholderName">Cardholder Name *</Label>
+                        <Input
+                          id="cardholderName"
+                          name="cardholderName"
+                          value={paymentInfo.cardholderName}
+                          onChange={handlePaymentInputChange}
+                          placeholder="John Doe"
+                          maxLength={100}
+                          required
+                        />
+                        {errors.cardholderName && <p className="text-sm text-destructive mt-1">{errors.cardholderName}</p>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="expiryDate">Expiry Date *</Label>
+                          <Input
+                            id="expiryDate"
+                            name="expiryDate"
+                            value={paymentInfo.expiryDate}
+                            onChange={handlePaymentInputChange}
+                            placeholder="MM/YY"
+                            maxLength={5}
+                            required
+                          />
+                          {errors.expiryDate && <p className="text-sm text-destructive mt-1">{errors.expiryDate}</p>}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="cvv" className="flex items-center gap-1">
+                            CVV *
+                            <Lock className="h-3 w-3 text-muted-foreground" />
+                          </Label>
+                          <Input
+                            id="cvv"
+                            name="cvv"
+                            type="password"
+                            value={paymentInfo.cvv}
+                            onChange={handlePaymentInputChange}
+                            placeholder="123"
+                            maxLength={4}
+                            required
+                          />
+                          {errors.cvv && <p className="text-sm text-destructive mt-1">{errors.cvv}</p>}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {paymentMethod === "paypal" && (
+                    <div>
+                      <Label htmlFor="paypalEmail">PayPal Email *</Label>
+                      <Input
+                        id="paypalEmail"
+                        name="paypalEmail"
+                        type="email"
+                        value={paymentInfo.paypalEmail}
+                        onChange={handlePaymentInputChange}
+                        placeholder="your@email.com"
+                        required
+                      />
+                      {errors.paypalEmail && <p className="text-sm text-destructive mt-1">{errors.paypalEmail}</p>}
+                    </div>
+                  )}
+
+                  {paymentMethod === "bank_transfer" && (
+                    <>
+                      <div>
+                        <Label htmlFor="bankAccount">Bank Account Number *</Label>
+                        <Input
+                          id="bankAccount"
+                          name="bankAccount"
+                          value={paymentInfo.bankAccount}
+                          onChange={handlePaymentInputChange}
+                          placeholder="123456789012"
+                          maxLength={17}
+                          required
+                        />
+                        {errors.bankAccount && <p className="text-sm text-destructive mt-1">{errors.bankAccount}</p>}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="routingNumber">Routing Number *</Label>
+                        <Input
+                          id="routingNumber"
+                          name="routingNumber"
+                          value={paymentInfo.routingNumber}
+                          onChange={handlePaymentInputChange}
+                          placeholder="123456789"
+                          maxLength={9}
+                          required
+                        />
+                        {errors.routingNumber && <p className="text-sm text-destructive mt-1">{errors.routingNumber}</p>}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="bg-muted/50 p-3 rounded-md text-xs text-muted-foreground">
+                    <Lock className="h-3 w-3 inline mr-1" />
+                    Your payment information is secure and encrypted
+                  </div>
                 </CardContent>
               </Card>
 
