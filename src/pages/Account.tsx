@@ -74,11 +74,11 @@ export default function Account() {
       <AuthGuard>
         <div className="min-h-screen bg-background">
           <Navbar />
-          <div className="container mx-auto px-4 py-8">
-            <Skeleton className="h-8 w-48 mb-6" />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="container mx-auto px-4 py-6">
+            <Skeleton className="h-8 w-32 mb-4" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-32" />
+                <Skeleton key={i} className="h-24" />
               ))}
             </div>
           </div>
@@ -91,11 +91,11 @@ export default function Account() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6">Account Dashboard</h1>
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            <Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
@@ -104,112 +104,110 @@ export default function Account() {
                 <div className="text-2xl font-bold">{stats?.orderCount}</div>
                 {stats?.lastOrderDate && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Last order: {new Date(stats.lastOrderDate).toLocaleDateString()}
+                    Last: {new Date(stats.lastOrderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 )}
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Saved Items</CardTitle>
                 <Heart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.savedItemsCount}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Items you're watching
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  Watching
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gift Card Balance</CardTitle>
+                <CardTitle className="text-sm font-medium">Gift Cards</CardTitle>
                 <Gift className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${stats?.giftCardBalance.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Available to spend
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  Available
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
+                <CardTitle className="text-sm font-medium">Donated</CardTitle>
                 <Heart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${stats?.totalDonations.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Making a difference
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  Total impact
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2 lg:col-span-1">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <Link to="/products">
-                  <Button className="w-full">Continue Shopping</Button>
-                </Link>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Link to="/account/orders" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Package className="mr-2 h-4 w-4" />
-                      View All Orders
-                    </Button>
-                  </Link>
-                  <Link to="/account/notify-me" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Heart className="mr-2 h-4 w-4" />
-                      Manage Notify Me List
-                    </Button>
-                  </Link>
-                </div>
+              <CardContent className="space-y-2">
+                <Link to="/products">
+                  <Button className="w-full" size="sm">
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    Continue Shopping
+                  </Button>
+                </Link>
+                <Link to="/account/orders">
+                  <Button variant="outline" className="w-full" size="sm">
+                    <Package className="mr-2 h-4 w-4" />
+                    View Orders
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Management</CardTitle>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Preferences</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Link to="/account/info" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Package className="mr-2 h-4 w-4" />
-                      Update Profile & Addresses
-                    </Button>
-                  </Link>
-                  <Link to="/account/gift-cards" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Gift className="mr-2 h-4 w-4" />
-                      Manage Gift Cards
-                    </Button>
-                  </Link>
-                  <Link to="/account/donations" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Heart className="mr-2 h-4 w-4" />
-                      View My Donations
-                    </Button>
-                  </Link>
-                </div>
+              <CardContent className="space-y-2">
+                <Link to="/account/notify-me">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Notify Me List
+                  </Button>
+                </Link>
+                <Link to="/account/notifications">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Package className="mr-2 h-4 w-4" />
+                    Notifications
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Account</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link to="/account/info">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Package className="mr-2 h-4 w-4" />
+                    Profile & Addresses
+                  </Button>
+                </Link>
+                <Link to="/account/gift-cards">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Gift className="mr-2 h-4 w-4" />
+                    Gift Cards
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

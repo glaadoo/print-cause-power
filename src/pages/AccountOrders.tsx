@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, Package, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import Navbar from "@/components/Navbar";
 import { AuthGuard } from "@/components/AuthGuard";
 import {
@@ -79,12 +80,12 @@ export default function AccountOrders() {
       <AuthGuard>
         <div className="min-h-screen bg-background">
           <Navbar />
-          <div className="container mx-auto px-4 py-8">
-            <Skeleton className="h-8 w-48 mb-6" />
-            <Skeleton className="h-10 w-full max-w-md mb-6" />
-            <div className="space-y-4">
+          <div className="container mx-auto px-4 py-6">
+            <Skeleton className="h-8 w-32 mb-4" />
+            <Skeleton className="h-9 w-full max-w-md mb-4" />
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32" />
+                <Skeleton key={i} className="h-28" />
               ))}
             </div>
           </div>
@@ -97,16 +98,16 @@ export default function AccountOrders() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6">My Orders</h1>
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold mb-4">My Orders</h1>
 
-          <div className="relative max-w-md mb-6">
+          <div className="relative max-w-md mb-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by order number or status..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-9"
             />
           </div>
 
@@ -123,67 +124,69 @@ export default function AccountOrders() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {filteredOrders.map((order) => (
-                <Card key={order.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg">
-                          Order #{order.order_number}
+                <Card key={order.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-base truncate">
+                          #{order.order_number}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Placed on {new Date(order.created_at).toLocaleDateString()}
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {new Date(order.created_at).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}
                         </p>
                       </div>
                       {getStatusBadge(order.status)}
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm">
-                          Ship to: <span className="font-medium">{order.shipping_name}</span>
-                        </p>
-                        <p className="text-lg font-bold mt-1">
-                          ${parseFloat(order.total.toString()).toFixed(2)}
-                        </p>
-                      </div>
+                  <CardContent className="pt-2 space-y-2">
+                    <div className="text-xs text-muted-foreground truncate">
+                      {order.shipping_name}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-lg font-bold">
+                        ${parseFloat(order.total.toString()).toFixed(2)}
+                      </p>
                       <Sheet>
                         <SheetTrigger asChild>
-                          <Button variant="outline">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                          <Button variant="outline" size="sm">
+                            <Eye className="mr-1 h-3 w-3" />
+                            View
                           </Button>
                         </SheetTrigger>
-                        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-                          <SheetHeader>
-                            <SheetTitle>Order #{order.order_number}</SheetTitle>
-                            <SheetDescription>
-                              Order placed on {new Date(order.created_at).toLocaleDateString()}
+                        <SheetContent className="w-full sm:max-w-md">
+                          <SheetHeader className="pb-3 border-b">
+                            <SheetTitle className="text-lg">Order #{order.order_number}</SheetTitle>
+                            <SheetDescription className="text-xs">
+                              {new Date(order.created_at).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
                             </SheetDescription>
                           </SheetHeader>
-                          <div className="mt-6 space-y-6">
-                            <div>
-                              <h4 className="font-semibold mb-2">Status</h4>
-                              {getStatusBadge(order.status)}
+                          <ScrollArea className="h-[calc(100vh-120px)] pr-4">
+                            <div className="mt-4 space-y-4">
+                              <div className="bg-muted/50 rounded-lg p-3">
+                                <h4 className="font-semibold text-sm mb-2">Status</h4>
+                                {getStatusBadge(order.status)}
+                              </div>
+                              <div className="bg-muted/50 rounded-lg p-3">
+                                <h4 className="font-semibold text-sm mb-2">Shipping Address</h4>
+                                <p className="text-sm leading-relaxed">{order.shipping_name}</p>
+                              </div>
+                              <div className="bg-muted/50 rounded-lg p-3">
+                                <h4 className="font-semibold text-sm mb-2">Order Total</h4>
+                                <p className="text-xl font-bold">
+                                  ${parseFloat(order.total.toString()).toFixed(2)}
+                                </p>
+                              </div>
                             </div>
-                            <Separator />
-                            <div>
-                              <h4 className="font-semibold mb-2">Shipping Address</h4>
-                              <p className="text-sm">{order.shipping_name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {order.shipping_name} - Details would be shown here
-                              </p>
-                            </div>
-                            <Separator />
-                            <div>
-                              <h4 className="font-semibold mb-2">Order Total</h4>
-                              <p className="text-2xl font-bold">
-                                ${parseFloat(order.total.toString()).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
+                          </ScrollArea>
                         </SheetContent>
                       </Sheet>
                     </div>

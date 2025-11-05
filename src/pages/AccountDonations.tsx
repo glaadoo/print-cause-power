@@ -60,89 +60,89 @@ const AccountDonations = () => {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
+          <div className="mb-4">
             <BackButton />
           </div>
           
-          <div className="flex items-center gap-3 mb-6">
-            <Heart className="w-8 h-8 text-highlight" />
-            <h1 className="text-3xl font-bold">My Donations</h1>
+          <div className="flex items-center gap-2 mb-4">
+            <Heart className="w-6 h-6 text-highlight" />
+            <h1 className="text-2xl font-bold">My Donations</h1>
           </div>
 
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-foreground/60">Total Donated</p>
-                  <p className="text-2xl font-bold text-highlight">${totalDonated.toLocaleString()}</p>
+          <Card className="mb-4">
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Total</p>
+                  <p className="text-xl font-bold text-highlight">${totalDonated.toFixed(2)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-foreground/60">Total Donations</p>
-                  <p className="text-2xl font-bold">{donations.length}</p>
+                <div className="text-center border-l border-r">
+                  <p className="text-xs text-muted-foreground mb-1">Count</p>
+                  <p className="text-xl font-bold">{donations.length}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-foreground/60">Impact Score</p>
-                  <p className="text-2xl font-bold">⭐ {Math.floor(totalDonated / 10)}</p>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Impact</p>
+                  <p className="text-xl font-bold">⭐ {Math.floor(totalDonated / 10)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Donation History</CardTitle>
-              <div className="relative mt-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">History</CardTitle>
+              <div className="relative mt-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by cause or name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-9"
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {loading ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-24 bg-muted/20 rounded-lg animate-pulse" />
+                    <div key={i} className="h-20 bg-muted/20 rounded-lg animate-pulse" />
                   ))}
                 </div>
               ) : filteredDonations.length === 0 ? (
-                <div className="text-center py-12">
-                  <Heart className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                  <p className="text-foreground/60">
-                    {searchTerm ? "No donations found matching your search" : "No donations yet"}
+                <div className="text-center py-8">
+                  <Heart className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">
+                    {searchTerm ? "No matching donations" : "No donations yet"}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
                   {filteredDonations.map((donation) => (
                     <div
                       key={donation.id}
-                      className="flex justify-between items-start p-4 glass-card hover:bg-muted/5 transition-colors"
+                      className="p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold capitalize">{donation.cause}</p>
-                          <Badge variant="outline" className="text-xs">
-                            {donation.payment_method}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-foreground/60">
-                          Donated as {donation.donor_name}
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <p className="font-semibold capitalize text-sm truncate flex-1">
+                          {donation.cause}
                         </p>
-                        <p className="text-xs text-foreground/40 mt-1">
-                          {formatDistanceToNow(new Date(donation.created_at), {
-                            addSuffix: true,
-                          })}
+                        <p className="text-base font-bold text-highlight flex-shrink-0">
+                          ${Number(donation.amount).toFixed(2)}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-highlight">
-                          ${Number(donation.amount).toLocaleString()}
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs h-5">
+                          {donation.payment_method}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {donation.donor_name}
                         </p>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(donation.created_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
                     </div>
                   ))}
                 </div>
