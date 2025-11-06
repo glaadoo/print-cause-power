@@ -99,33 +99,33 @@ const CausesDashboard = () => {
 
   return (
     <>
-      <section className="py-20 bg-background/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">
+      <section className="py-12 md:py-14 bg-background/50">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
               Live Causes <span className="bg-gradient-secondary bg-clip-text text-transparent">Dashboard</span>
             </h2>
-            <p className="text-foreground/70 text-lg">
+            <p className="text-foreground/70 text-sm md:text-base">
               Real-time donation tracking across all causes
             </p>
           </div>
 
-          <Card className="max-w-4xl mx-auto glass-card">
-            <CardHeader>
+          <Card className="glass-card">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle>Donation Totals by Cause</CardTitle>
+                <CardTitle className="text-lg">Donation Totals by Cause</CardTitle>
                 <Button
                   onClick={() => setShowPressmasterModal(true)}
                   variant="outline"
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 h-9 text-xs"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   Get Pressmaster Quote
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -149,18 +149,18 @@ const CausesDashboard = () => {
                         }`}
                       >
                         <TableCell>
-                          <div className={`inline-flex p-2 rounded-lg glass ${colorClass} ${
+                          <div className={`inline-flex p-1.5 rounded-lg glass ${colorClass} ${
                             causeTotal.updated ? 'animate-glow' : ''
                           }`}>
-                            <Icon className="h-5 w-5" />
+                            <Icon className="h-4 w-4" />
                           </div>
                         </TableCell>
-                        <TableCell className="font-medium capitalize">
+                        <TableCell className="font-medium capitalize text-sm">
                           {causeTotal.cause}
                         </TableCell>
                         <TableCell className="text-right">
                           <span 
-                            className={`text-lg font-bold ${colorClass} ${
+                            className={`text-base font-bold ${colorClass} ${
                               causeTotal.updated 
                                 ? 'animate-scale-in' 
                                 : ''

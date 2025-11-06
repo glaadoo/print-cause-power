@@ -91,15 +91,15 @@ const DonationBarometer = ({ selectedCause }: DonationBarometerProps) => {
   }, [selectedCause]);
 
   return (
-    <section className="py-20">
+    <section className="py-12 md:py-14">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 glass-card px-4 py-2 mb-6">
-              <TrendingUp className="h-4 w-4 text-accent" />
-              <span className="text-sm">Live Impact Tracker</span>
+            <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 glass-card px-3 py-1.5 mb-4">
+              <TrendingUp className="h-3.5 w-3.5 text-accent" />
+              <span className="text-xs md:text-sm">Live Impact Tracker</span>
             </div>
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
               {selectedCause ? (
                 <>
                   <span className="capitalize">{selectedCause}</span>{" "}
@@ -111,20 +111,20 @@ const DonationBarometer = ({ selectedCause }: DonationBarometerProps) => {
                 </>
               )}
             </h2>
-            <p className="text-foreground/70 text-lg">
+            <p className="text-foreground/70 text-sm md:text-base">
               Together we're making a real difference
             </p>
           </div>
 
-          <div className="glass-card p-8 space-y-6">
+          <div className="glass-card p-5 md:p-6 space-y-5">
             {selectedCause && (
-              <div className="mb-6 p-4 glass border-l-4 border-accent">
+              <div className="mb-5 p-3 glass border-l-4 border-accent">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-5 w-5 text-accent" />
-                    <span className="font-semibold capitalize">{selectedCause} Donations</span>
+                  <div className="flex items-center gap-2.5">
+                    <Heart className="h-4 w-4 text-accent" />
+                    <span className="font-semibold capitalize text-sm">{selectedCause} Donations</span>
                   </div>
-                  <span className="text-xl font-bold text-accent">
+                  <span className="text-lg font-bold text-accent">
                     ${causeAmount.toLocaleString()}
                   </span>
                 </div>
@@ -132,13 +132,13 @@ const DonationBarometer = ({ selectedCause }: DonationBarometerProps) => {
             )}
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Heart className="h-6 w-6 text-highlight animate-glow" />
-                <span className="text-lg font-semibold">
+              <div className="flex items-center gap-2.5">
+                <Heart className="h-5 w-5 text-highlight animate-glow" />
+                <span className="text-base font-semibold">
                   {selectedCause ? "Global Total" : "Total Donations"}
                 </span>
               </div>
-              <span className="text-2xl font-bold text-highlight">
+              <span className="text-xl font-bold text-highlight">
                 ${currentAmount.toLocaleString()}
               </span>
             </div>
@@ -152,27 +152,27 @@ const DonationBarometer = ({ selectedCause }: DonationBarometerProps) => {
             </div>
 
             <div className="pt-4 border-t border-white/10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-xl font-bold text-primary mb-0.5">
                     ${(currentAmount / 1000).toFixed(1)}K
                   </div>
                   <div className="text-xs text-foreground/60">Total</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-xl font-bold text-primary mb-0.5">
                     ${weekAmount.toLocaleString()}
                   </div>
                   <div className="text-xs text-foreground/60">This Week</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-xl font-bold text-primary mb-0.5">
                     ${todayAmount.toLocaleString()}
                   </div>
                   <div className="text-xs text-foreground/60">Today</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-xl font-bold text-primary mb-0.5">
                     ${recentAmount.toLocaleString()}
                   </div>
                   <div className="text-xs text-foreground/60">Recent</div>
@@ -181,12 +181,12 @@ const DonationBarometer = ({ selectedCause }: DonationBarometerProps) => {
             </div>
 
             {currentAmount >= 125000 && (
-              <div className="glass p-4 border-l-4 border-accent animate-slide-in">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-accent mt-0.5" />
+              <div className="glass p-3 border-l-4 border-accent animate-slide-in">
+                <div className="flex items-start gap-2.5">
+                  <Sparkles className="h-4 w-4 text-accent mt-0.5" />
                   <div>
-                    <div className="font-semibold mb-1">Milestone Reached! 🎉</div>
-                    <p className="text-sm text-foreground/70">
+                    <div className="font-semibold mb-0.5 text-sm">Milestone Reached! 🎉</div>
+                    <p className="text-xs text-foreground/70">
                       You've helped us reach the $125K milestone! Your support is changing lives.
                     </p>
                   </div>

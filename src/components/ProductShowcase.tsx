@@ -43,18 +43,18 @@ const ProductShowcase = () => {
   const { addToCart } = useCart();
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">
+    <section className="py-12 md:py-14">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
             Featured <span className="bg-gradient-primary bg-clip-text text-transparent">Products</span>
           </h2>
-          <p className="text-foreground/70 text-lg max-w-2xl mx-auto">
+          <p className="text-foreground/70 text-sm md:text-base max-w-2xl mx-auto">
             Every purchase includes a donation to causes you care about
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {products.map((product, index) => (
             <Card 
               key={product.id} 
@@ -74,19 +74,19 @@ const ProductShowcase = () => {
                 </div>
               </Link>
               
-              <CardContent className="p-4">
-                <div className="text-xs text-accent font-semibold mb-2">{product.category}</div>
+              <CardContent className="p-3">
+                <div className="text-xs text-accent font-semibold mb-1.5">{product.category}</div>
                 <Link to={`/products/${product.id}`}>
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-1 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
+                  <h3 className="font-semibold text-base mb-1.5 line-clamp-1 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
                 </Link>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">${product.price}</span>
+                  <span className="text-xl font-bold text-primary">${product.price}</span>
                 </div>
               </CardContent>
 
-              <CardFooter className="p-4 pt-0 gap-2">
+              <CardFooter className="p-3 pt-0 gap-2">
                 <Button 
-                  className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+                  className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity h-9 text-sm"
                   onClick={() => addToCart({
                     id: product.id,
                     name: product.name,
@@ -95,20 +95,20 @@ const ProductShowcase = () => {
                     donationAmount: product.donationAmount
                   })}
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
                   Add to Cart
                 </Button>
-                <Button variant="ghost" size="icon" className="glass hover:bg-white/10">
-                  <Heart className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="glass hover:bg-white/10 h-9 w-9">
+                  <Heart className="h-3.5 w-3.5" />
                 </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <Link to="/products">
-            <Button size="lg" variant="outline" className="glass border-white/20 hover:bg-white/10">
+            <Button size="default" variant="outline" className="glass border-white/20 hover:bg-white/10 h-10 text-sm">
               View All Products
             </Button>
           </Link>

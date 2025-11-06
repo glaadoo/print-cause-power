@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountMenu } from "@/components/AccountMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import {
@@ -22,6 +22,8 @@ const Navbar = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [activeOrderCount, setActiveOrderCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,6 +69,27 @@ const Navbar = () => {
     fetchActiveOrders();
   }, [user]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        // Scrolling down
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleAccountClick = () => {
     if (!user) {
       setShowAuthModal(true);
@@ -74,8 +97,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-primary shadow-lg border-b-2 border-accent/20">
-      <div className="container mx-auto px-4 py-4">
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-gradient-primary shadow-lg border-b-2 border-accent/20 transition-transform duration-200 ${
+      isVisible ? "translate-y-0" : "-translate-y-full"
+    }`}>
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <Home className="h-6 w-6 text-primary-foreground transition-transform group-hover:scale-110" />

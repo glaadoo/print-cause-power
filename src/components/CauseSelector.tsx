@@ -91,18 +91,18 @@ const CauseSelector = () => {
   };
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">
+    <section className="py-12 md:py-14">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
             Choose Your <span className="bg-gradient-secondary bg-clip-text text-transparent">Cause</span>
           </h2>
-          <p className="text-foreground/70 text-lg max-w-2xl mx-auto">
+          <p className="text-foreground/70 text-sm md:text-base max-w-2xl mx-auto">
             Select a cause that resonates with you. Your purchases will help make a difference.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {causeConfig.map((cause, index) => {
             const Icon = cause.icon;
             const causeName = cause.title.toLowerCase();
@@ -115,15 +115,15 @@ const CauseSelector = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleCauseClick(cause)}
               >
-                <CardContent className="p-6 text-center">
-                  <div className={`inline-flex p-4 rounded-2xl glass mb-4 ${cause.color} group-hover:animate-glow`}>
-                    <Icon className="h-8 w-8" />
+                <CardContent className="p-4 text-center">
+                  <div className={`inline-flex p-3 rounded-2xl glass mb-3 ${cause.color} group-hover:animate-glow`}>
+                    <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-xl mb-2">{cause.title}</h3>
-                  <p className="text-foreground/70 text-sm mb-4">{cause.description}</p>
-                  <div className="glass p-3 rounded-lg">
-                    <div className="text-xs text-foreground/60 mb-1">Total Raised</div>
-                    <div className={`text-lg font-bold ${cause.color} transition-all duration-300`}>
+                  <h3 className="font-semibold text-lg mb-1.5">{cause.title}</h3>
+                  <p className="text-foreground/70 text-xs mb-3">{cause.description}</p>
+                  <div className="glass p-2.5 rounded-lg">
+                    <div className="text-xs text-foreground/60 mb-0.5">Total Raised</div>
+                    <div className={`text-base font-bold ${cause.color} transition-all duration-300`}>
                       ${total.toLocaleString()}
                     </div>
                   </div>
