@@ -5,6 +5,7 @@ import CausesDashboard from "@/components/CausesDashboard";
 import DonationBarometer from "@/components/DonationBarometer";
 import ProductShowcase from "@/components/ProductShowcase";
 import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
       <ProductShowcase />
       <DonationBarometer />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };

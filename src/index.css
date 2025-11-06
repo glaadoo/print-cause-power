@@ -114,6 +114,10 @@ All colors MUST be HSL.
     @apply border-border transition-colors duration-150;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply text-foreground relative transition-colors duration-150;
     background: var(--gradient-background);
