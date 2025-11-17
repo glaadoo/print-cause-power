@@ -1,207 +1,263 @@
-import { ShoppingCart, User, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { useCart } from "@/contexts/CartContext";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AccountMenu } from "@/components/AccountMenu";
-import { useEffect, useState, useRef } from "react";
+// src/components/MenuOverlay.tsx
+import React, { useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User as SupabaseUser } from "@supabase/supabase-js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
+import VideoBackground from "./VideoBackground";
 
-const Navbar = () => {
-  const { totalItems } = useCart();
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [activeOrderCount, setActiveOrderCount] = useState(0);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
+type Item = { label: string; href: string };
+type Props = { open: boolean; onClose: () => void; items?: Item[]; showSignOut?: boolean };
+
+/** Animation settings for staggered entry/exit */
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+  },
+  exit: {
+    opacity: 0,
+    transition: { staggerChildren: 0.05, staggerDirection: -1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -18 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.28 } },
+  exit: { opacity: 0, x: -18, transition: { duration: 0.18 } },
+};
+
+export default function MenuOverlay({ open, onClose, items, showSignOut = false }: Props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
-    // Fetch notification count
-    const fetchNotificationCount = async () => {
-      const { count } = await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .is("read_at", null);
-      
-      setNotificationCount(count || 0);
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
     };
+  }, [open]);
 
-    // Fetch active orders count
-    const fetchActiveOrders = async () => {
-      const { count } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .in("status", ["processing", "shipped"]);
-      
-      setActiveOrderCount(count || 0);
-    };
+  // Use provided items or fall back to default menu items
+  const menuItems: Item[] = items || [
+    { label: "About", href: "/about" },
+    { label: "Solutions", href: "#solutions" },
+    { label: "Learn", href: "#learn" },
+    { label: "Insights", href: "/insights" },
+    { label: "News", href: "/news" },
+    { label: "Contact", href: "/contact" },
+    { label: "Donate", href: "/select/nonprofit" },
+  ];
 
-    fetchNotificationCount();
-    fetchActiveOrders();
-  }, [user]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < 10) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollY.current) {
-        // Scrolling down
-        setIsVisible(false);
-      } else {
-        // Scrolling up
-        setIsVisible(true);
+  // Handler for Donate button to set guest access if not already onboarded
+  const handleDonateClick = (e: React.MouseEvent, href: string) => {
+    if (href === "/select/nonprofit") {
+      e.preventDefault();
+      if (typeof window !== "undefined") {
+        const access = window.localStorage.getItem("ppp_access");
+        if (!access) {
+          // Not onboarded yet → treat as "Continue as Guest"
+          window.localStorage.setItem("ppp_access", "guest");
+        }
       }
-      
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleAccountClick = () => {
-    if (!user) {
-      setShowAuthModal(true);
+      navigate("/select/nonprofit");
+      onClose();
     }
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-gradient-primary shadow-lg border-b-2 border-accent/20 transition-transform duration-200 ${
-      isVisible ? "translate-y-0" : "-translate-y-full"
-    }`}>
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <Home className="h-6 w-6 text-primary-foreground transition-transform group-hover:scale-110" />
-            <span className="text-xl font-bold text-primary-foreground">
-              Print Power Purpose
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-6">
-            <Link 
-              to="/products" 
-              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
-            >
-              Products
-            </Link>
-            <Link 
-              to="/donations" 
-              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
-            >
-              Donations
-            </Link>
-            <Link 
-              to="/about" 
-              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
-            >
-              About
-            </Link>
-            <Link 
-              to="/kenzie" 
-              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
-            >
-              Kenzie
-            </Link>
-            <Link 
-              to="/onboarding" 
-              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
-            >
-              Onboarding
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10">
-                <ShoppingCart className="h-5 w-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            {user ? (
-              <AccountMenu 
-                user={user} 
-                notificationCount={notificationCount}
-                activeOrderCount={activeOrderCount}
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="menu-root"
+          className="fixed inset-0 z-[100]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Main menu"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Dimmed background */}
+          <button onClick={onClose} className="absolute inset-0 cursor-default" aria-label="Close menu backdrop">
+            <div className="absolute inset-0 -z-10">
+              <VideoBackground
+                srcMp4="/media/hero.mp4"
+                srcWebm="/media/hero.webm"
+                poster="/media/hero-poster.jpg"
+                parallaxVh={0}
+                overlay={<div className="absolute inset-0 bg-black/55" />}
               />
-            ) : (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-primary-foreground hover:bg-white/10"
-                onClick={handleAccountClick}
+            </div>
+          </button>
+
+          {/* Left slide-in panel */}
+          <motion.aside
+            onClick={(e) => e.stopPropagation()}
+            className="
+              fixed left-0 top-0 h-full
+              w-[min(420px,90vw)] sm:w-[min(460px,85vw)]
+              lg:w-1/3 xl:w-1/4
+              backdrop-blur-xl
+              text-white
+              flex flex-col
+              rounded-r-2xl
+            "
+            style={{
+              backgroundColor: "transparent",
+              border: "2px solid rgba(255,255,255,0.5)",
+              boxShadow: "0 4px 30px rgba(0, 0, 0, 0.3)",
+            }}
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
+          >
+            {/* Circular close “X” */}
+            <button
+              onClick={onClose}
+              aria-label="Close menu"
+              className="
+                absolute top-4 right-4
+                size-9 rounded-full
+                border border-white/30
+                bg-white/10 hover:bg-white/20
+                grid place-items-center
+              "
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M6 6l12 12M18 6L6 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {/* Header */}
+            <div className="px-5 pt-5 pb-3">
+              <div className="text-xs uppercase tracking-[0.2em] opacity-80">PRINT POWER PURPOSE</div>
+            </div>
+
+            {/* Divider under header */}
+            <div className="mx-4 mt-3 mb-4 border-t border-white/20" />
+
+            {/* Animated text-only menu list */}
+            <nav className="px-4 pb-4 overflow-y-auto">
+              <motion.ul
+                variants={listVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="flex flex-col gap-2 items-end text-right"
               >
-                <User className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+                {menuItems.map((it) => (
+                  <motion.li key={it.href} variants={itemVariants} className="w-full">
+                    {it.href.startsWith("#") ? (
+                      <a
+                        href={it.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const id = it.href.substring(1);
+                          const element = document.getElementById(id);
+                          if (element) {
+                            const headerOffset = 80;
+                            const elementPosition = element.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                            window.scrollTo({
+                              top: offsetPosition,
+                              behavior: "smooth",
+                            });
+                          }
+                          onClose();
+                        }}
+                        className="
+                          inline-block ml-auto
+                          text-white/90 hover:text-white
+                          text-lg md:text-xl font-semibold
+                          tracking-wide
+                          transition-all hover:translate-x-1
+                        "
+                      >
+                        {it.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={it.href}
+                        onClick={(e) => {
+                          console.log(`Navigating to: ${it.href}`);
+                          // Special handling for Donate link
+                          if (it.href === "/select/nonprofit") {
+                            handleDonateClick(e, it.href);
+                          } else {
+                            onClose();
+                          }
+                        }}
+                        className="
+                          inline-block ml-auto
+                          text-white/90 hover:text-white
+                          text-lg md:text-xl font-semibold
+                          tracking-wide
+                          transition-all hover:translate-x-1
+                        "
+                      >
+                        {it.label}
+                      </Link>
+                    )}
+                  </motion.li>
+                ))}
+              </motion.ul>
 
-      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sign In Required</DialogTitle>
-            <DialogDescription>
-              Please sign in or create an account to access your account features.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 mt-4">
-            <Button 
-              onClick={() => {
-                setShowAuthModal(false);
-                navigate("/auth");
-              }}
-            >
-              Sign In / Create Account
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowAuthModal(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </nav>
+              {/* Bottom divider */}
+              <div className="mt-6 border-t border-white/15" />
+
+              {/* Chat with Kenzie CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.15 } }}
+                className="mt-5 w-full flex justify-end"
+              >
+                <button
+                  onClick={() => {
+                    onClose();
+                    window.kenzieOpenChat?.();
+                  }}
+                  className="
+                    rounded-full px-5 py-3
+                    bg-white/10 text-white font-semibold
+                    hover:bg-white/20
+                    border border-white/30
+                  "
+                >
+                  Kenzie
+                </button>
+              </motion.div>
+
+              {showSignOut ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
+                  className="mt-4 w-full flex justify-end"
+                >
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      navigate("/auth");
+                      onClose();
+                    }}
+                    className="
+                      rounded-full px-5 py-3
+                      bg-white/10 text-white font-semibold
+                      hover:bg-white/20
+                      border border-white/30
+                    "
+                  >
+                    Sign Out
+                  </button>
+                </motion.div>
+              ) : null}
+            </nav>
+
+            {/* Footer */}
+            <div className="mt-auto px-5 pb-5 text-xs opacity-70">© {new Date().getFullYear()} PPP</div>
+          </motion.aside>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
-};
-
-export default Navbar;
+}
