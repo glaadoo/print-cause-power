@@ -8,6 +8,7 @@ import {
   Heart,
   Gift,
   LogOut,
+  TrendingUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -73,6 +74,7 @@ export function AccountMenu({ user, notificationCount = 0, activeOrderCount = 0 
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/account" },
+    { icon: TrendingUp, label: "My Impact", href: "/account/impact" },
     { icon: Package, label: "My Orders", href: "/account/orders", badge: activeOrderCount > 0 ? `${activeOrderCount} active` : undefined },
     { icon: UserCircle, label: "My Info", href: "/account/info" },
     { icon: Bell, label: "Notifications", href: "/account/notifications", badge: notificationCount > 0 ? notificationCount : undefined },
