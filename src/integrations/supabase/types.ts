@@ -59,10 +59,38 @@ export type Database = {
         }
         Relationships: []
       }
+      causes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          total_raised: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          total_raised?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          total_raised?: number | null
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number
           cause: string
+          cause_id: string | null
           created_at: string
           donor_name: string
           id: string
@@ -72,6 +100,7 @@ export type Database = {
         Insert: {
           amount: number
           cause: string
+          cause_id?: string | null
           created_at?: string
           donor_name: string
           id?: string
@@ -81,13 +110,22 @@ export type Database = {
         Update: {
           amount?: number
           cause?: string
+          cause_id?: string | null
           created_at?: string
           donor_name?: string
           id?: string
           payment_method?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "donations_cause_id_fkey"
+            columns: ["cause_id"]
+            isOneToOne: false
+            referencedRelation: "causes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gift_card_redemptions: {
         Row: {
@@ -261,6 +299,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          cause_id: string | null
           created_at: string
           id: string
           order_number: string
@@ -281,6 +320,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cause_id?: string | null
           created_at?: string
           id?: string
           order_number: string
@@ -301,6 +341,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cause_id?: string | null
           created_at?: string
           id?: string
           order_number?: string
@@ -321,6 +362,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_cause_id_fkey"
+            columns: ["cause_id"]
+            isOneToOne: false
+            referencedRelation: "causes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_shipping_address_id_fkey"
             columns: ["shipping_address_id"]
