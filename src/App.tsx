@@ -24,6 +24,7 @@ import AccountNotifyMe from "./pages/AccountNotifyMe";
 import AccountGiftCards from "./pages/AccountGiftCards";
 import AccountDonations from "./pages/AccountDonations";
 import AccountImpact from "./pages/AccountImpact";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/account/gift-cards" element={<AccountGiftCards />} />
               <Route path="/account/donations" element={<AccountDonations />} />
               <Route path="/account/impact" element={<AccountImpact />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
