@@ -113,6 +113,12 @@ const Navbar = () => {
               Products
             </Link>
             <Link
+              to="/causes"
+              className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
+            >
+              Causes
+            </Link>
+            <Link
               to="/donations"
               className="relative text-base font-medium text-primary-foreground/90 hover:text-primary-foreground hover:underline hover:scale-105 transition-all duration-200 pb-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all hover:after:w-full"
             >

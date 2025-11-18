@@ -14,6 +14,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Kenzie from "./pages/Kenzie";
 import Donations from "./pages/Donations";
+import Causes from "./pages/Causes";
 import Account from "./pages/Account";
 import AccountOrders from "./pages/AccountOrders";
 import AccountInfo from "./pages/AccountInfo";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/kenzie" element={<Kenzie />} />
               <Route path="/donations" element={<Donations />} />
+              <Route path="/causes" element={<Causes />} />
               <Route path="/account" element={<Account />} />
               <Route path="/account/orders" element={<AccountOrders />} />
               <Route path="/account/info" element={<AccountInfo />} />
