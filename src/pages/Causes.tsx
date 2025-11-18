@@ -6,14 +6,21 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GraduationCap, Heart, Leaf, Users, TrendingUp, DollarSign, Award } from "lucide-react";
+import { GraduationCap, Heart, Leaf, Users, TrendingUp, DollarSign, Award, Search, Plus } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface CauseStats {
   id: string;
   name: string;
   description: string;
   image_url: string | null;
+  tags: string | null;
+  website_url: string | null;
   total_raised: number;
   donation_count: number;
   unique_donors: number;
@@ -59,60 +66,85 @@ const impactStories: Record<string, { title: string; story: string; impact: stri
 
 const Causes = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [causeStats, setCauseStats] = useState<CauseStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [newCause, setNewCause] = useState({
+    name: "",
+    description: "",
+    tags: "",
+    website_url: "",
+  });
 
   useEffect(() => {
-    const fetchCauseStats = async () => {
-      try {
-        // Fetch all causes
-        const { data: causes } = await supabase
-          .from('causes')
-          .select('*')
-          .order('name');
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
 
-        if (!causes) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-        // Fetch donation statistics for each cause
-        const statsPromises = causes.map(async (cause) => {
-          const { data: donations } = await supabase
-            .from('donations')
-            .select('amount, user_id')
-            .eq('cause_id', cause.id);
+    return () => subscription.unsubscribe();
+  }, []);
 
-          if (!donations || donations.length === 0) {
-            return {
-              ...cause,
-              donation_count: 0,
-              unique_donors: 0,
-              avg_donation: 0,
-            };
-          }
-
-          const uniqueDonors = new Set(donations.map(d => d.user_id)).size;
-          const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
-          const avgDonation = totalAmount / donations.length;
-
-          return {
-            ...cause,
-            total_raised: totalAmount,
-            donation_count: donations.length,
-            unique_donors: uniqueDonors,
-            avg_donation: avgDonation,
-          };
-        });
-
-        const stats = await Promise.all(statsPromises);
-        setCauseStats(stats);
-      } catch (error) {
-        console.error('Error fetching cause stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchCauseStats();
   }, []);
+
+  const fetchCauseStats = async () => {
+    try {
+      setLoading(true);
+      // Fetch all causes
+      const { data: causes } = await supabase
+        .from('causes')
+        .select('*')
+        .order('name');
+
+      if (!causes) return;
+
+      // Fetch donation statistics for each cause
+      const statsPromises = causes.map(async (cause) => {
+        const { data: donations } = await supabase
+          .from('donations')
+          .select('amount, user_id')
+          .eq('cause_id', cause.id);
+
+        if (!donations || donations.length === 0) {
+          return {
+            ...cause,
+            donation_count: 0,
+            unique_donors: 0,
+            avg_donation: 0,
+          };
+        }
+
+        const uniqueDonors = new Set(donations.map(d => d.user_id)).size;
+        const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
+        const avgDonation = totalAmount / donations.length;
+
+        return {
+          ...cause,
+          total_raised: totalAmount,
+          donation_count: donations.length,
+          unique_donors: uniqueDonors,
+          avg_donation: avgDonation,
+        };
+      });
+
+      const stats = await Promise.all(statsPromises);
+      setCauseStats(stats);
+    } catch (error) {
+      console.error('Error fetching cause stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDonate = (causeName: string) => {
     navigate('/donations', { 
@@ -126,6 +158,69 @@ const Causes = () => {
     });
   };
 
+  const handleAddCause = async () => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be logged in to add a cause.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    if (!newCause.name || !newCause.description) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in the cause name and description.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('causes').insert({
+        name: newCause.name,
+        description: newCause.description,
+        tags: newCause.tags || null,
+        website_url: newCause.website_url || null,
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Cause added successfully!",
+        description: "Your cause has been added and will appear shortly.",
+      });
+
+      setIsAddDialogOpen(false);
+      setNewCause({ name: "", description: "", tags: "", website_url: "" });
+      fetchCauseStats();
+    } catch (error: any) {
+      console.error('Error adding cause:', error);
+      toast({
+        title: "Error adding cause",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredCauses = causeStats.filter((cause) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      cause.name.toLowerCase().includes(query) ||
+      cause.description?.toLowerCase().includes(query) ||
+      cause.tags?.toLowerCase().includes(query)
+    );
+  });
+
+  const showAddCauseCTA = searchQuery.length > 0 && filteredCauses.length === 0;
   const maxDonation = Math.max(...causeStats.map(c => c.total_raised || 0), 1);
 
   return (
@@ -142,6 +237,36 @@ const Causes = () => {
             <p className="text-foreground/70 text-lg max-w-3xl mx-auto">
               Every purchase you make contributes to meaningful change. Explore the causes we support and see the real impact your contributions are making in communities around the world.
             </p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search causes by name, keywords, or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-6 text-base"
+              />
+            </div>
+            
+            {/* Add Cause CTA */}
+            {showAddCauseCTA && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50 flex items-center justify-between">
+                <p className="text-sm text-foreground/70">Can't find your cause?</p>
+                <Button
+                  onClick={() => setIsAddDialogOpen(true)}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add it here
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Overall Stats */}
@@ -180,9 +305,16 @@ const Causes = () => {
       {/* Causes Detail Section */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4 max-w-6xl">
-          <Tabs defaultValue={causeStats[0]?.name.toLowerCase()} className="w-full">
-            <TabsList className="mb-8 w-full justify-start overflow-x-auto flex-wrap h-auto gap-2">
-              {causeStats.map((cause) => {
+          {filteredCauses.length === 0 && !showAddCauseCTA ? (
+            <div className="text-center py-12">
+              <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No causes found</h3>
+              <p className="text-muted-foreground">Try another keyword or add a new cause.</p>
+            </div>
+          ) : (
+            <Tabs defaultValue={filteredCauses[0]?.name.toLowerCase()} className="w-full">
+              <TabsList className="mb-8 w-full justify-start overflow-x-auto flex-wrap h-auto gap-2">
+                {filteredCauses.map((cause) => {
                 const Icon = causeIcons[cause.name.toLowerCase()] || Heart;
                 return (
                   <TabsTrigger 
@@ -194,10 +326,10 @@ const Causes = () => {
                     {cause.name}
                   </TabsTrigger>
                 );
-              })}
-            </TabsList>
+                })}
+              </TabsList>
 
-            {causeStats.map((cause) => {
+              {filteredCauses.map((cause) => {
               const Icon = causeIcons[cause.name.toLowerCase()] || Heart;
               const gradient = causeColors[cause.name.toLowerCase()] || "from-primary to-primary/70";
               const story = impactStories[cause.name.toLowerCase()];
@@ -310,10 +442,75 @@ const Causes = () => {
                   </div>
                 </TabsContent>
               );
-            })}
-          </Tabs>
+              })}
+            </Tabs>
+          )}
         </div>
       </section>
+
+      {/* Add Cause Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add a New Cause</DialogTitle>
+            <DialogDescription>
+              Create a new cause to help make a difference. Fill in the details below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="cause-name">Cause Name *</Label>
+              <Input
+                id="cause-name"
+                placeholder="e.g., Clean Water Initiative"
+                value={newCause.name}
+                onChange={(e) => setNewCause({ ...newCause, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cause-description">Description *</Label>
+              <Textarea
+                id="cause-description"
+                placeholder="Describe the cause and its impact..."
+                value={newCause.description}
+                onChange={(e) => setNewCause({ ...newCause, description: e.target.value })}
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cause-tags">Tags (optional)</Label>
+              <Input
+                id="cause-tags"
+                placeholder="e.g., water, health, community"
+                value={newCause.tags}
+                onChange={(e) => setNewCause({ ...newCause, tags: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cause-website">Website URL (optional)</Label>
+              <Input
+                id="cause-website"
+                type="url"
+                placeholder="https://..."
+                value={newCause.website_url}
+                onChange={(e) => setNewCause({ ...newCause, website_url: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddCause} disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Cause"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
