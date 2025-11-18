@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { GraduationCap, Heart, Leaf, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -102,36 +103,76 @@ const CauseSelector = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="mb-6 w-full justify-start overflow-x-auto flex-wrap h-auto gap-1">
+            <TabsTrigger value="all" className="flex-shrink-0">All Causes</TabsTrigger>
+            {causeConfig.map((cause) => (
+              <TabsTrigger key={cause.title} value={cause.title.toLowerCase()} className="flex-shrink-0">
+                {cause.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value="all" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {causeConfig.map((cause, index) => {
+                const Icon = cause.icon;
+                const causeName = cause.title.toLowerCase();
+                const total = causeTotals[causeName] || 0;
+                
+                return (
+                  <Card 
+                    key={index}
+                    className="glass-card cursor-pointer hover:scale-105 transition-all duration-300 group animate-slide-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                    onClick={() => handleCauseClick(cause)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className={`inline-flex p-3 rounded-2xl glass mb-3 ${cause.color} group-hover:animate-glow`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-1.5">{cause.title}</h3>
+                      <p className="text-foreground/70 text-xs mb-3 line-clamp-2">{cause.description}</p>
+                      <div className="pt-3 border-t border-border/50">
+                        <p className="text-xs text-foreground/60 mb-0.5">Total Raised</p>
+                        <p className="text-xl font-bold text-primary">${total.toFixed(2)}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
           {causeConfig.map((cause, index) => {
             const Icon = cause.icon;
             const causeName = cause.title.toLowerCase();
             const total = causeTotals[causeName] || 0;
             
             return (
-              <Card 
-                key={index}
-                className="glass-card cursor-pointer hover:scale-105 transition-all duration-300 group animate-slide-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => handleCauseClick(cause)}
-              >
-                <CardContent className="p-4 text-center">
-                  <div className={`inline-flex p-3 rounded-2xl glass mb-3 ${cause.color} group-hover:animate-glow`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="font-semibold text-lg mb-1.5">{cause.title}</h3>
-                  <p className="text-foreground/70 text-xs mb-3">{cause.description}</p>
-                  <div className="glass p-2.5 rounded-lg">
-                    <div className="text-xs text-foreground/60 mb-0.5">Total Raised</div>
-                    <div className={`text-base font-bold ${cause.color} transition-all duration-300`}>
-                      ${total.toLocaleString()}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <TabsContent key={cause.title} value={causeName} className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card 
+                    className="glass-card cursor-pointer hover:scale-105 transition-all duration-300 group animate-slide-in"
+                    onClick={() => handleCauseClick(cause)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className={`inline-flex p-3 rounded-2xl glass mb-3 ${cause.color} group-hover:animate-glow`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-1.5">{cause.title}</h3>
+                      <p className="text-foreground/70 text-xs mb-3 line-clamp-2">{cause.description}</p>
+                      <div className="pt-3 border-t border-border/50">
+                        <p className="text-xs text-foreground/60 mb-0.5">Total Raised</p>
+                        <p className="text-xl font-bold text-primary">${total.toFixed(2)}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
             );
           })}
-        </div>
+        </Tabs>
       </div>
     </section>
   );
