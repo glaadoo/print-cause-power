@@ -13,6 +13,42 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const causeSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(3, "Name must be at least 3 characters")
+    .max(100, "Name must be less than 100 characters")
+    .regex(/^[a-zA-Z0-9\s&'-]+$/, "Name contains invalid characters"),
+  description: z.string()
+    .trim()
+    .min(10, "Description must be at least 10 characters")
+    .max(500, "Description must be less than 500 characters"),
+  tags: z.string()
+    .trim()
+    .max(200, "Tags must be less than 200 characters")
+    .optional(),
+  website_url: z.string()
+    .trim()
+    .refine(
+      (url) => !url || url.startsWith('http://') || url.startsWith('https://'),
+      "URL must start with http:// or https://"
+    )
+    .refine(
+      (url) => {
+        if (!url) return true;
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      "Must be a valid URL"
+    )
+    .optional()
+});
 
 interface CauseStats {
   id: string;
@@ -169,22 +205,33 @@ const Causes = () => {
       return;
     }
 
-    if (!newCause.name || !newCause.description) {
+    // Validate input before submitting
+    const validation = causeSchema.safeParse({
+      name: newCause.name,
+      description: newCause.description,
+      tags: newCause.tags || "",
+      website_url: newCause.website_url || ""
+    });
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
       toast({
-        title: "Missing fields",
-        description: "Please fill in the cause name and description.",
+        title: "Validation Error",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
     }
 
+    const validatedData = validation.data;
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase.from('causes').insert({
-        name: newCause.name,
-        description: newCause.description,
-        tags: newCause.tags || null,
-        website_url: newCause.website_url || null,
+        name: validatedData.name,
+        description: validatedData.description,
+        tags: validatedData.tags || null,
+        website_url: validatedData.website_url || null,
         user_id: user.id,
       });
 

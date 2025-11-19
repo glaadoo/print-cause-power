@@ -1,10 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const quoteRequestSchema = z.object({
+  project: z.string()
+    .trim()
+    .min(1, 'Project name required')
+    .max(200, 'Project name too long'),
+  specs: z.string()
+    .trim()
+    .min(1, 'Specs required')
+    .max(1000, 'Specs too long'),
+  quantity: z.number()
+    .int('Quantity must be an integer')
+    .positive('Quantity must be positive')
+    .max(10000, 'Quantity too large'),
+  donationId: z.string().uuid().optional()
+});
 
 // Mock data generator
 function getMockQuote(requestData: any) {
@@ -53,9 +71,28 @@ serve(async (req) => {
       );
     }
 
-    // Parse request data
+    // Parse and validate request data
     const requestData = await req.json();
-    const { project, specs, quantity, donationId } = requestData;
+    
+    // Validate input
+    const validation = quoteRequestSchema.safeParse(requestData);
+    
+    if (!validation.success) {
+      console.error('Validation error:', validation.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid input', 
+          details: validation.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const { project, specs, quantity, donationId } = validation.data;
 
     console.log('Pressmaster quote request:', { project, specs, quantity, donationId, userId: user.id });
 
