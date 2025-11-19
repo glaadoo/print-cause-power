@@ -9,6 +9,24 @@ import { toast } from "@/hooks/use-toast";
 import { Heart } from "lucide-react";
 import { PressmasterQuoteModal } from "./PressmasterQuoteModal";
 import { requestPressmasterQuote, PressmasterQuoteResponse } from "@/services/pressmaster.service";
+import { z } from "zod";
+
+const donationSchema = z.object({
+  donor_name: z.string()
+    .trim()
+    .min(1, "Name is required")
+    .max(100, "Name must be less than 100 characters")
+    .regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
+  amount: z.number()
+    .positive("Amount must be positive")
+    .min(1, "Minimum donation is $1")
+    .max(1000000, "Maximum donation is $1,000,000"),
+  cause: z.string()
+    .min(1, "Please select a cause"),
+  payment_method: z.enum(["credit_card", "paypal", "bank_transfer"], {
+    errorMap: () => ({ message: "Please select a payment method" })
+  })
+});
 
 interface DonationFormProps {
   selectedCause?: string;
@@ -41,13 +59,34 @@ const DonationForm = ({ selectedCause, causeDetails }: DonationFormProps) => {
     setIsSubmitting(true);
 
     try {
+      // Validate input before submitting
+      const validation = donationSchema.safeParse({
+        donor_name: formData.donor_name,
+        amount: parseFloat(formData.amount),
+        cause: formData.cause,
+        payment_method: formData.payment_method
+      });
+
+      if (!validation.success) {
+        const errorMessage = validation.error.errors[0].message;
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const validatedData = validation.data;
+
       const { data: insertedData, error } = await supabase
         .from('donations')
         .insert({
-          donor_name: formData.donor_name,
-          amount: parseFloat(formData.amount),
-          cause: formData.cause,
-          payment_method: formData.payment_method,
+          donor_name: validatedData.donor_name,
+          amount: validatedData.amount,
+          cause: validatedData.cause,
+          payment_method: validatedData.payment_method,
           user_id: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
