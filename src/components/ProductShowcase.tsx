@@ -61,18 +61,19 @@ const ProductShowcase = () => {
               className="glass-card overflow-hidden group hover:scale-105 transition-all duration-300 animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <Link to={`/products/${product.id}`}>
-                <div className="relative overflow-hidden aspect-square cursor-pointer">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute top-2 right-2 glass-card px-2 py-1 text-xs font-semibold">
-                    ${product.donationAmount} donated
-                  </div>
+              <div className="relative overflow-hidden aspect-square">
+                <img
+                  src={product.image || `https://via.placeholder.com/600x400?text=${encodeURIComponent(product.name)}`}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://via.placeholder.com/600x400?text=${encodeURIComponent(product.name)}`;
+                  }}
+                />
+                <div className="absolute top-2 right-2 glass-card px-2 py-1 text-xs font-semibold">
+                  ${product.donationAmount} donated
                 </div>
-              </Link>
+              </div>
               
               <CardContent className="p-3">
                 <div className="text-xs text-accent font-semibold mb-1.5">{product.category}</div>
